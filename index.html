@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPA & CGPA Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6a11cb;
+            --secondary-color: #2575fc;
+            --accent-color: #ffcc00;
+            --text-color: #333;
+            --light-text: white;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+        }
+        
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        label {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        input, select {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+        }
+        
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 1em;
+        }
+        
+        button {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            background-color: #ff9900;
+            transform: translateY(-2px);
+        }
+        
+        .courses-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .course-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .result-section {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(106, 17, 203, 0.1);
+            border-radius: 10px;
+        }
+        
+        #gpaResult {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+        
+        #motivation {
+            font-size: 18px;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .animated {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--light-text);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                width: 95%;
+            }
+            
+            .courses-container {
+                grid-template-columns: 1fr;
+            }
+            
+            button {
+                padding: 15px;
+            }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .courses-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            margin: 10px auto;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-calculator"></i> GPA & CGPA Calculator</h1>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <label for="numCourses"><i class="fas fa-book-open"></i> Number of Courses (1-8):</label>
+                <input type="number" id="numCourses" min="1" max="10" value="1">
+            </div>
+            <button onclick="generateInputs()">
+                <i class="fas fa-plus-circle"></i> Generate Course Fields
+            </button>
+        </div>
+        
+        <div id="inputs" class="courses-container"></div>
+        
+        <button onclick="calculateGPA()" id="calculateBtn">
+            <i class="fas fa-calculator"></i> Calculate GPA
+        </button>
+        <div class="spinner" id="spinner"></div>
+        
+        <div class="result-section">
+            <h2 id="gpaResult"></h2>
+            <p id="motivation"></p>
+        </div>
+    </div>
+    
+    <footer>
+        &copy; S U B E E N | GPA Calculator
+    </footer>
+    
+    <script>
+        const gradeValues = {
+            'A (80 marks)': 4.0, 
+            'A-(75 marks)': 3.7, 
+            'B+(70 marks)': 3.3, 
+            'B (65 marks)': 3.0, 
+            'B-(60 marks)': 2.7, 
+            'C+(55 marks)': 2.3,
+            'C (50 marks)': 2.0, 
+            'C-(45 marks)': 1.7, 
+            'D (40 marks)': 1.0, 
+            'F': 0.0
+        };
+        function generateInputs() {
+            let numCourses = document.getElementById('numCourses').value;
+            // Changed max from 8 to 10
+            numCourses = Math.min(Math.max(numCourses, 1), 10);
+            let inputsDiv = document.getElementById('inputs');
+            inputsDiv.innerHTML = '';
+            
+            for (let i = 0; i < numCourses; i++) {
+                const courseCard = document.createElement('div');
+                courseCard.className = 'course-card';
+                courseCard.innerHTML = `
+                    <div class="input-group">
+                        <label>Course ${i + 1} Grade:</label>
+                        <select class="grade">
+                            ${Object.keys(gradeValues).map(grade => 
+                                `<option value="${gradeValues[grade]}">${grade}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Credits:</label>
+                        <input type="number" class="credits" min="1" value="3">
+                    </div>
+                `;
+                inputsDiv.appendChild(courseCard);
+            }
+        }
+        
+        
+        function calculateGPA() {
+            const calculateBtn = document.getElementById('calculateBtn');
+            const spinner = document.getElementById('spinner');
+            
+            // Show loading spinner
+            calculateBtn.style.display = 'none';
+            spinner.style.display = 'block';
+            
+            // Simulate processing delay for better UX
+            setTimeout(() => {
+                let grades = document.querySelectorAll('.grade');
+                let credits = document.querySelectorAll('.credits');
+                let totalPoints = 0, totalCredits = 0;
+                
+                if (grades.length === 0) {
+                    document.getElementById('gpaResult').innerText = 'Please generate course fields first';
+                    calculateBtn.style.display = 'flex';
+                    spinner.style.display = 'none';
+                    return;
+                }
+                
+                grades.forEach((grade, index) => {
+                    let gradeValue = parseFloat(grade.value);
+                    let creditValue = parseFloat(credits[index].value);
+                    totalPoints += gradeValue * creditValue;
+                    totalCredits += creditValue;
+                });
+                
+                let gpa = totalCredits > 0 ? (totalPoints / totalCredits) : 0;
+                document.getElementById('gpaResult').innerHTML = `
+                    <span>Your GPA:</span>
+                    <span style="font-size: 32px; color: ${getGPAColor(gpa)}">${gpa.toFixed(2)}</span>
+                `;
+                
+                displayMotivation(gpa);
+                
+                // Hide spinner and show button again
+                calculateBtn.style.display = 'flex';
+                spinner.style.display = 'none';
+                
+                // Scroll to result for better mobile UX
+                document.getElementById('gpaResult').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }, 800);
+        }
+        
+        function getGPAColor(gpa) {
+            if (gpa >= 3.5) return '#2ecc71'; // Green for high GPA
+            if (gpa >= 2.5) return '#f39c12'; // Orange for medium GPA
+            return '#e74c3c'; // Red for low GPA
+        }
+        
+        function displayMotivation(gpa) {
+            let motivation = document.getElementById('motivation');
+            motivation.style.opacity = 1;
+            
+            if (gpa < 2.0) {
+                motivation.innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i> Don't give up! 
+                    <br>Every expert was once a beginner. Focus on improvement!
+                `;
+                motivation.style.backgroundColor = '#ffebee';
+                motivation.style.color = '#c62828';
+                motivation.classList.add('animated');
+            } else if (gpa >= 2.0 && gpa < 3.0) {
+                motivation.innerHTML = `
+                    <i class="fas fa-thumbs-up"></i> Good progress! 
+                    <br>With a little more effort, you can reach even higher!
+                `;
+                motivation.style.backgroundColor = '#fff8e1';
+                motivation.style.color = '#f57f17';
+                motivation.classList.add('animated');
+            } else {
+                motivation.innerHTML = `
+                    <i class="fas fa-trophy"></i> Excellent work! 
+                    <br>Your dedication is paying off - keep it up!
+                `;
+                motivation.style.backgroundColor = '#e8f5e9';
+                motivation.style.color = '#2e7d32';
+                motivation.classList.remove('animated');
+            }
+        }
+        
+        // Initialize with one course by default
+        window.onload = generateInputs;
+    </script>
+</body>
+</html>
